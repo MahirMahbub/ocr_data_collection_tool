@@ -50,7 +50,6 @@ app = FastAPI()
 db = SessionLocal()
 
 
-
 @app.on_event("startup")
 async def startup_event():
     pass
