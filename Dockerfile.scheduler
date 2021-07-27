@@ -1,0 +1,7 @@
+FROM python:3.8.5
+ENV PYTHONUNBUFFERED 1
+RUN mkdir /srv/scheduler
+WORKDIR /srv/scheduler
+COPY requirements.scheduler.txt /srv/scheduler/
+RUN pip install --no-cache-dir -r requirements.scheduler.txt
+COPY ./db ./common ./scheduler_app  /srv/scheduler/

@@ -3,7 +3,7 @@ version: "3.8"
 services:
   db:
       image: postgres:12.2
-      container_name:  Wiki-Postgres
+      container_name:  OCR-Postgres
       restart: always
       environment:
         POSTGRES_DB: postgres
@@ -15,9 +15,9 @@ services:
       ports:
         - 54320:5432
 
-  wiki_movie_backend:
+  ocr_tool_backend:
     build: .
-    container_name:  WikiMovie
+    container_name:  OCRTool
     command: bash -c "uvicorn app.main:app --host 0.0.0.0 --port 7003 --reload"
     volumes:
       - .:/srv/ocr_backend
@@ -27,15 +27,33 @@ services:
       - db
     env_file: .env
 
-  wiki_db_mutator:
+  ocr_tool_db_mutator:
     build: .
-    container_name:  wiki-Db-Mutator
+    container_name:  ocr-tool-Db-Mutator
     command: bash -c "python run_db.py auto"
     volumes:
-      - .:/srv/wiki_movie_backend
+      - .:/srv/ocr_tool_backend
     env_file: .env
     depends_on:
-      - wiki_movie_backend
+      - ocr_tool_backend
+#
+#  schedule_backend:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.scheduler
+#    container_name: Schedule
+#    command: bash -c "uvicorn scheduler_app.main:app --host 0.0.0.0 --port 3000"
+#    volumes:
+#      - ./db:/srv/scheduler/db
+#      - ./common:/srv/scheduler/common
+#      - ./scheduler_app:/srv/scheduler/scheduler_app
+#    ports:
+#      - 6004:3000
+#      - 5002:5000
+#    depends_on:
+#      - ocr_tool_backend
+#    env_file: .env
+
 
 volumes:
   db-data:
