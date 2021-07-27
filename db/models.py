@@ -31,5 +31,21 @@ class ClassLabel(Base):
     round_robin_marker = Column(Integer, default=0)
 
 
+class OcrData(Base):
+    __tablename__: str = "ocr_data"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    file_path = Column(String)
+    is_extracted = Column(Boolean, default=False)
+
+
+class Properties(Base):
+    __tablename__: str = "properties"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String)
+    value = Column(Boolean, default=False)
+
+
 class ScheduleJobNames(str, Enum):
-    CharacterSegmentationManager = "CharacterSegmentationManager"
+    CharacterExtractorManager = "CharacterExtractorManager"
+    PrintJobManager = "PrintJobManager"
+    PreOcrCharacterLoad = "PreOcrCharacterLoad"

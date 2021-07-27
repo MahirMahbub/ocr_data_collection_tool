@@ -3,10 +3,10 @@ from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.create_data import CreateData
-from app.cruds.data_loader import DataLoaderCrud
-from app.custom_classes.rating_extractor import RatingExtractor
-from app.routes import movies
+# from app.create_data import CreateData
+# from app.custom_classes.rating_extractor import RatingExtractor
+# from app.routes import movies
+from app.routes import test, ocr, scheduler
 from db.database import SessionLocal
 
 app = FastAPI()
@@ -39,13 +39,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app = FastAPI()
+# app = FastAPI()
+
+app.include_router(
+    test.router,
+    prefix="/error",
+    tags=["Error"],
+)
+
+app.include_router(
+    scheduler.router,
+    prefix="/scheduler",
+    tags=["Scheduler"],
+)
 
 # API routes
-# app.include_router(
-#     example,
-#     tags=["example"]
-# )
+app.include_router(
+    ocr.router,
+    prefix="/ocr",
+    tags=["Ocr"]
+)
 
 db = SessionLocal()
 
