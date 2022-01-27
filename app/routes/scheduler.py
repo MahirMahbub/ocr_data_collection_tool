@@ -52,10 +52,10 @@ def init_scheduler():
     job_list = scheduler.get_jobs()
     print(job_list)
 
-    # job_initiator(db, job_list, scheduler, ScheduleJobNames.PrintJobManager, '*/1 * * * *',
-    #               PrintJobManager.execute)
-    # job_initiator(db, job_list, scheduler, ScheduleJobNames.CharacterExtractorManager, '*/1 * * * *',
-    #               CharacterExtractorManager.execute)
+    job_initiator(db, job_list, scheduler, ScheduleJobNames.PrintJobManager, '*/1 * * * *',
+                  PrintJobManager.execute)
+    job_initiator(db, job_list, scheduler, ScheduleJobNames.CharacterExtractorManager, '*/1 * * * *',
+                  CharacterExtractorManager.execute)
     job_initiator(db, job_list, scheduler, ScheduleJobNames.PreOcrCharacterLoad, '*/1 * * * *',
                   PreOcrCharacterLoad.execute)
 

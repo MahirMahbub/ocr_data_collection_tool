@@ -41,7 +41,7 @@ SQLALCHEMY_DATABASE_URL = 'postgresql://{}:{}@{}:{}/{}?sslmode={}'.format(db_use
 
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, pool_size=3, max_overflow=0
+    SQLALCHEMY_DATABASE_URL, pool_size=10, max_overflow=0
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, query_cls=CustomQuery)

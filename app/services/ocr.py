@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.cruds.character import CharacterCrud
 from app.cruds.ocr_tools import OcrToolCrud
 from app.custom_classes.file_path import next_file_name
+from custom_classes.image_clustering import ImageClustering
 from db.schemas import OcrDataCreate, CharacterUpdate, CharacterClassUpdate
 
 image_file_extensions = IMAGE = ('ras', 'xwd', 'bmp', 'jpe', 'jpg', 'jpeg', 'xpm', 'ief', 'pbm', 'tif', 'gif', 'ppm',
@@ -75,3 +76,9 @@ class Ocr(object):
         response = CharacterCrud(db=db).update(item=item, id_=id_)
         db.commit()
         return response
+
+    @staticmethod
+    def get_images_for_class_label(db, class_id):
+        image_paths = ImageClustering(db=db, class_id=class_id).apply_kmean()
+        image_ids = [CharacterCrud(db=db).get_id_by_path(image_path) for image_path in image_paths]
+        return image_ids
