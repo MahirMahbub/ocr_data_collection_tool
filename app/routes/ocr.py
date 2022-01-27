@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse, FileResponse
 from app.cruds.class_label import ClassLabelCrud
 from app.depends.db_depend import get_db
 from app.services.ocr import Ocr as ServiceOcr
-from db.schemas import CharacterUpdate, CharacterClassUpdate
+from db.schemas import CharacterClassUpdate
 
 router = InferringRouter()
 
@@ -58,7 +58,7 @@ class Ocr:
             }
 
     @router.get("/data/image/response/")
-    def get_ocr_image_response(self, id_: int = Query(default=None)):
+    def get_ocr_main_image_response(self, id_: int = Query(default=None)):
         if id_ is None:
             return HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                  detail="Any Image not found")
@@ -74,9 +74,9 @@ class Ocr:
         for data in unclassified_images:
             response_list.append({
                 "id": data.id,
-                "details": "/classification/image/response/?id_={}".format(data.id),
+                "url": "/classification/image/response/?id_={}".format(data.id),
             })
-        return{
+        return {
             "classToBeLabeled": class_label_object.class_id,
             "images": response_list
         }
@@ -91,7 +91,6 @@ class Ocr:
             print(data)
             return FileResponse(data.character_path)
 
-
     @router.patch("/classification/image/{id_}")
     def update_character_image_class(self, id_: int = Path(default=None), body: CharacterClassUpdate = Body(...)):
         if id_ is None:
@@ -101,3 +100,18 @@ class Ocr:
             if ServiceOcr().update_character_image_class(self.db, id_, body):
                 return HTTPException(status_code=status.HTTP_201_CREATED,
                                      detail="Character image updated")
+
+    @router.get("/data/class/image/")
+    def get_class_label_images(self, class_id: int = Query(None)):
+        if class_id is None:
+            return HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                 detail="Any Image not found")
+        else:
+            ids = ServiceOcr().get_images_for_class_label(self.db, class_id)
+            response_list = []
+            for id_ in ids:
+                response_list.append({
+                    "id": id_[0],
+                    "url": "/classification/image/response/?id_={}".format(id_[0]),
+                })
+            return response_list

@@ -47,12 +47,16 @@ class Test:
         #     raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
         #                         detail="Character can not be extracted from image")
 
-    def update(self):
-        from db.schemas import OcrDataUpdate
-        item = OcrDataUpdate(is_extracted=True)
-        OcrToolCrud.update(item=item, id_=ocr_image.id)
-        self.db.commit()
-
+    # def update(self):
+    #     from db.schemas import OcrDataUpdate
+    #     item = OcrDataUpdate(is_extracted=True)
+    #     OcrToolCrud.update(item=item, id_=ocr_image.id)
+    #     self.db.commit()
+    #
+    @router.get("/test/")
+    def get_test(self):
+        from custom_classes.image_clustering import ImageClustering
+        print(ImageClustering(db=self.db, class_id=23).apply_kmean())
 
 
 

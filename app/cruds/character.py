@@ -22,3 +22,9 @@ class CharacterCrud(TableRepository):
     def get_images(self, limit=5):
         return self.db.query(self.entity).filter(self.entity.is_labeled == False,
                                                  self.entity.class_id == None).limit(limit).all()
+
+    def get_by_class_id(self, class_id: str):
+        return self.db.query(self.entity).filter(self.entity.class_id == class_id).all()
+
+    def get_id_by_path(self, path):
+        return self.db.query(self.entity.id).filter(self.entity.character_path == path).first()
