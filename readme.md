@@ -54,8 +54,7 @@ docker system prune -a --volumes
 DB credentials:
 
     add new server
-    host name: db_campaign
-    port: 54320
+    port: 54321
     db: postgres
     user: admin
     password: secret
@@ -71,37 +70,5 @@ pool_size and max_overflow https://stackoverflow.com/a/9999411
 Update Db and insert master data:
 python run_db.py auto
 python run_db.py data
-
-### The parsing of data and  loading of data to the database will happen while starting the fastapi server when "data_loader" table will have "true" status for "Movie Data Loading"
-
-For manual upload of data with parsing run in docker terminal:
-
-python parse.py 
-
-NB: ** manual parsing is not included optional "phrase 4", "phrase 4" only runs at startup.
-
-When the database is ready with the parsed data, "data_loader" table will have "false" status for "Movie Data Loading" so that the data parsing & loading never happens again.
-
-### Phrase 4 will run while starting the fastapi server when "data_loader" table will have "true" status for "Movie Rating Loading"
-
-change the db value for enable/disable phrase 4. 
-
-did not exposed an api for "data_loader" table's status change, because of maintaining exact api deliverables by the assignment requirements.
-
-total number of movies found in third party csv that has been provided: 475
-
-# API endpoints
-
-http://localhost:7003/movies?count={}&page={}
-
-http://localhost:7003/movie/{}
-
-For Source Code for Data Parsing and Data Upload to database, see:
-
-app/custom_classes/*
-
-Used Chain of Responsibility, Singletone, Repository.
-
-For API details please see: https://github.com/MahirMahbub/Wiki_Movies/blob/master/API%20Doc.pdf
 
 
