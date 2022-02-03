@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.cruds.character import CharacterCrud
+from app.cruds.class_label import ClassLabelCrud
 from app.cruds.ocr_tools import OcrToolCrud
 from app.custom_classes.file_path import next_file_name
 from custom_classes.image_clustering import ImageClustering
@@ -62,8 +63,10 @@ class Ocr(object):
 
     @staticmethod
     def get_character_images_and_class_to_be_classify(db, limit=5):
+        class_label_object = ClassLabelCrud(db=db).get_by_round_robin()
+        db.commit()
         # class_label_object = ClassLabelCrud(db=db).get_by_round_robin()
-        return CharacterCrud(db=db).get_images(limit=limit)
+        return CharacterCrud(db=db).get_images(limit=limit), class_label_object
 
     @staticmethod
     def get_character_image_by_id(db, id_: int):

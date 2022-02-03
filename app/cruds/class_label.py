@@ -22,4 +22,7 @@ class ClassLabelCrud(TableRepository):
 
     def get_by_round_robin(self):
         sub_query = self.db.query(func.min(self.entity.round_robin_marker))
-        return self.db.query(self.entity).filter(self.entity.round_robin_marker == sub_query).first()
+        class_label_instance = self.db.query(self.entity).filter(self.entity.round_robin_marker == sub_query).first()
+        class_label_instance.round_robin_marker += 1
+
+        return class_label_instance
