@@ -12,6 +12,7 @@ class Characters(Base):
     class_id = Column(String, nullable=True)
     inner_class_cluster_id = Column(String, nullable=True)
     is_labeled = Column(Boolean, default=False)
+    winner_label_count = Column(Integer, default=0)
 
 
 class NearestClassOfCharacter(Base):
