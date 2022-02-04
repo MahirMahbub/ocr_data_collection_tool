@@ -47,6 +47,7 @@ class CharacterUpdate(BaseModel):
     class_id: Optional[str] = None
     inner_class_cluster_id: Optional[str] = None
     is_labeled: Optional[bool] = None
+    winner_label_count: Optional[int] = None
 
 
 class CharacterClassUpdate(BaseModel):

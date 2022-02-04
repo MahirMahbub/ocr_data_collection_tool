@@ -68,7 +68,8 @@ class Ocr:
 
     @router.get("/classification/images/")
     def get_class_and_data_to_classify(self, limit: int = Query(5)):
-        unclassified_images, class_label_object = ServiceOcr().get_character_images_and_class_to_be_classify(self.db, limit=limit)
+        unclassified_images, class_label_object = ServiceOcr().\
+            get_character_images_and_class_to_be_classify(self.db,limit=limit)
         response_list = []
         for data in unclassified_images:
             response_list.append({
@@ -96,6 +97,7 @@ class Ocr:
             return HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                                  detail="Provide a valid id")
         else:
+
             if ServiceOcr().update_character_image_class(self.db, id_, body):
                 return HTTPException(status_code=status.HTTP_201_CREATED,
                                      detail="Character image updated")

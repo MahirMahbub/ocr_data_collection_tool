@@ -21,7 +21,8 @@ class CharacterCrud(TableRepository):
 
     def get_images(self, limit=5):
         return self.db.query(self.entity).filter(self.entity.is_labeled == False,
-                                                 self.entity.class_id == None).limit(limit).all()
+                                                 self.entity.class_id == None,
+                                                 self.entity.winner_label_count < 3).limit(limit).all()
 
     def get_by_class_id(self, class_id: str):
         return self.db.query(self.entity).filter(self.entity.class_id == class_id).all()

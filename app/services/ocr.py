@@ -12,6 +12,7 @@ from app.cruds.class_label import ClassLabelCrud
 from app.cruds.ocr_tools import OcrToolCrud
 from app.custom_classes.file_path import next_file_name
 from custom_classes.image_clustering import ImageClustering
+from db import models
 from db.schemas import OcrDataCreate, CharacterUpdate, CharacterClassUpdate
 
 image_file_extensions = IMAGE = ('ras', 'xwd', 'bmp', 'jpe', 'jpg', 'jpeg', 'xpm', 'ief', 'pbm', 'tif', 'gif', 'ppm',
@@ -74,8 +75,15 @@ class Ocr(object):
 
     @staticmethod
     def update_character_image_class(db, id_: int, body: CharacterClassUpdate):
-        item = CharacterUpdate(class_id=body.class_id,
-                               is_labeled=True)
+        image: models.Characters = CharacterCrud(db=db).get(id_=id_)
+        item: CharacterUpdate = CharacterUpdate()
+
+        if image.winner_label_count == 0 or image.winner_label_count is None:
+            item = CharacterUpdate(class_id=body.class_id,
+                                   is_labeled=True,
+                                   winner_label_count=1)
+        elif 0 < image.winner_label_count < 3:
+            item = CharacterUpdate(winner_label_count=image.winner_label_count + 1)
         response = CharacterCrud(db=db).update(item=item, id_=id_)
         db.commit()
         return response
