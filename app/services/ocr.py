@@ -77,8 +77,9 @@ class Ocr(object):
     def update_character_image_class(db, id_: int, body: CharacterClassUpdate):
         image: models.Characters = CharacterCrud(db=db).get(id_=id_)
         item: CharacterUpdate = CharacterUpdate()
-
-        if image.winner_label_count == 0 or image.winner_label_count is None:
+        if image.class_id != body.class_id and image.winner_label_count > 0:
+            item = CharacterUpdate(winner_label_count=image.winner_label_count - 1)
+        elif image.winner_label_count == 0 or image.winner_label_count is None:
             item = CharacterUpdate(class_id=body.class_id,
                                    is_labeled=True,
                                    winner_label_count=1)
