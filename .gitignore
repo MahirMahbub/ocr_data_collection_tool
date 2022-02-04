@@ -1,0 +1,4 @@
+/app/data/ocr_image/*
+/app/data/raw_training_set/*
+/app/data/training_set/*
+/app/data/raw_training_set_zip.zip
