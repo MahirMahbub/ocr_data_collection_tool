@@ -54,11 +54,11 @@ class PreOcrCharacterLoad(BaseJobManager):
             ClassLabelCrud(db=self.db).store(item=label_item, checker={"class_id": class_name})
 
             list_of_files = [current_path + class_data_path + os.path.join(class_name, f) for f in
-                                 os.listdir(current_path + class_data_path + class_name + "/")]
+                             os.listdir(current_path + class_data_path + class_name + "/")]
             for file in list_of_files:
                 item = CharacterCreate(character_path=file,
-                                           class_id=class_name,
-                                           is_labeled=True)
+                                       class_id=class_name,
+                                       is_labeled=True)
                 CharacterCrud(db=self.db).store(item=item, checker={"character_path": file})
             # self.db.commit()
         self.db.add(models.Properties(name="CharacterDataPreLoad", value=True))
@@ -82,7 +82,9 @@ class CharacterExtractorManager(BaseJobManager):
             images_and_save_path = ocr_processing_object.character_extractor(ocr_image.file_path)
             for save_path, char_img in images_and_save_path:
                 imageio.imwrite(save_path, char_img)
-                item = CharacterCreate(character_path=save_path)
+                item = CharacterCreate(character_path=save_path,
+                                       winner_label_count = 0,
+                                       is_labeled=False)
                 character_model_object = CharacterCrud(db=self.db).store(jsonable_encoder(item))
                 self.db.add(character_model_object)
             item = OcrDataUpdate(is_extracted=True)
