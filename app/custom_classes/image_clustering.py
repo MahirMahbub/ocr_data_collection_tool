@@ -57,10 +57,19 @@ class ImageClustering(object):
         return images
 
     def apply_kmean(self):
-        images = self.apply_pca()
-        # k_means = KMeans(init= "k-means++", n_clusters = 3, n_init = 35)
-        centers, indices = kmeans_plusplus(images, n_clusters = 3)
-        # k_means.fit(images)
-        # print(k_means.cluster_centers_)
-        # print(indices )
-        return np.array(self.image_paths)[list(indices)]
+        try:
+            images = self.apply_pca()
+            # k_means = KMeans(init= "k-means++", n_clusters = 3, n_init = 35)
+            centers, indices = kmeans_plusplus(images, n_clusters = 3)
+            # k_means.fit(images)
+            # print(k_means.cluster_centers_)
+            # print(indices )
+            return np.array(self.image_paths)[list(indices)]
+        except:
+            print(self.image_paths)
+            if len(self.image_paths)<3:
+                paths = self.image_paths + self.image_paths + self.image_paths
+                print("Print: ", paths)
+                return np.array(paths[0:3])
+            else:
+                return np.array(self.image_paths[0:3])

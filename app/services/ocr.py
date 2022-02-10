@@ -12,7 +12,7 @@ from app.cruds.character import CharacterCrud
 from app.cruds.class_label import ClassLabelCrud
 from app.cruds.ocr_tools import OcrToolCrud
 from app.custom_classes.file_path import next_file_name
-from custom_classes.image_clustering import ImageClustering
+from app.custom_classes.image_clustering import ImageClustering
 from db import models
 from db.schemas import OcrDataCreate, CharacterUpdate, CharacterClassUpdate
 from skimage.metrics import structural_similarity as ssim
@@ -67,7 +67,7 @@ class Ocr(object):
     def get_character_images_and_class_to_be_classify(self, db, limit=5):
         final_image_object_list = []
         class_label_object = ClassLabelCrud(db=db).get_by_round_robin()
-        db.commit()
+
 
         label_image_paths = ImageClustering(db=db, class_id=class_label_object.class_id).apply_kmean()
 
@@ -87,7 +87,7 @@ class Ocr(object):
 
             final_image_object_list.append((images_object_list[index], avg_ssim))
         final_image_object_list = sorted(final_image_object_list, key=lambda x: x[1], reverse=True)
-        final_image_object_list = [obj[0]  for obj in final_image_object_list[0: limit] ]
+        final_image_object_list = [obj[0] for obj in final_image_object_list[0: limit]]
         return final_image_object_list, class_label_object
 
     @staticmethod
@@ -95,18 +95,21 @@ class Ocr(object):
         return CharacterCrud(db=db).get(id_=id_)
 
     @staticmethod
-    def update_character_image_class(db, id_: int, body: CharacterClassUpdate):
-        image: models.Characters = CharacterCrud(db=db).get(id_=id_)
-        item: CharacterUpdate = CharacterUpdate()
-        if image.class_id != body.class_id and image.winner_label_count > 0:
-            item = CharacterUpdate(winner_label_count=image.winner_label_count - 1)
-        elif image.winner_label_count == 0 or image.winner_label_count is None:
-            item = CharacterUpdate(class_id=body.class_id,
-                                   is_labeled=True,
-                                   winner_label_count=1)
-        elif 0 < image.winner_label_count < 3:
-            item = CharacterUpdate(winner_label_count=image.winner_label_count + 1)
-        response = CharacterCrud(db=db).update(item=item, id_=id_)
+    def update_character_image_class(db, identifier: int, body: CharacterClassUpdate):
+        response = []
+        for id_ in body.character_ids:
+            image: models.Characters = CharacterCrud(db=db).get(id_=id_)
+            item: CharacterUpdate = CharacterUpdate()
+            print(body.class_id)
+            if image.class_id != body.class_id and image.winner_label_count > 0:
+                item = CharacterUpdate(winner_label_count=image.winner_label_count - 1)
+            elif image.winner_label_count == 0 or image.winner_label_count is None:
+                item = CharacterUpdate(class_id=body.class_id,
+                                       is_labeled=True,
+                                       winner_label_count=1)
+            elif 0 < image.winner_label_count < 2:
+                item = CharacterUpdate(winner_label_count=image.winner_label_count + 1)
+            response.append(CharacterCrud(db=db).update(item=item, id_=id_))
         db.commit()
         return response
 

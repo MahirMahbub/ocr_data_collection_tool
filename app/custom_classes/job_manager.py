@@ -83,7 +83,7 @@ class CharacterExtractorManager(BaseJobManager):
             for save_path, char_img in images_and_save_path:
                 imageio.imwrite(save_path, char_img)
                 item = CharacterCreate(character_path=save_path,
-                                       winner_label_count = 0,
+                                       winner_label_count=0,
                                        is_labeled=False)
                 character_model_object = CharacterCrud(db=self.db).store(jsonable_encoder(item))
                 self.db.add(character_model_object)
@@ -94,3 +94,6 @@ class CharacterExtractorManager(BaseJobManager):
     @staticmethod
     def execute():
         CharacterExtractorManager().character_extract_activity(should_run=True)
+
+
+

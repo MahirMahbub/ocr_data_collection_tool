@@ -18,3 +18,11 @@ def catch_not_implemented_exception(fn):
                                 detail="Method Not Implemented Yet")
 
     return wrapper
+
+
+def overrides(interface_class):
+    def overrider(method):
+        assert (method.__name__ in dir(interface_class))
+        return method
+
+    return overrider

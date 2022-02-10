@@ -1,7 +1,6 @@
 import os
 
-import imageio
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi_utils.cbv import cbv
 from fastapi_utils.inferring_router import InferringRouter
 from sqlalchemy.orm import Session
@@ -9,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from app.depends.db_depend import get_db
 
-from app.custom_classes.ocr_character_seperator import OcrCharacterSeperator
 from db import models
 
 router = InferringRouter()
@@ -55,7 +53,7 @@ class Test:
     #
     @router.get("/test/")
     def get_test(self):
-        from custom_classes.image_clustering import ImageClustering
+        from app.custom_classes.image_clustering import ImageClustering
         print(ImageClustering(db=self.db, class_id=23).apply_kmean())
 
 

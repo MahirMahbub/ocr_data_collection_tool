@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi_camelcase import CamelModel
 from pydantic import BaseModel
@@ -53,3 +53,15 @@ class CharacterUpdate(BaseModel):
 
 class CharacterClassUpdate(BaseModel):
     class_id: Optional[str] = None
+    character_ids: List[int] = []
+
+
+class ResponseReportBase(BaseModel):
+    class_id: int
+
+
+class ResponseReportCreate(ResponseReportBase):
+    num_character_label: Optional[int] = None
+
+class ResponseReportUpdate(BaseModel):
+    num_character_label: int

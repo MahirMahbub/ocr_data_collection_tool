@@ -1,6 +1,7 @@
+import datetime
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, Integer, String, Float
+from sqlalchemy import Boolean, Column, Integer, String, Float, DateTime
 
 from db.database import Base
 
@@ -44,6 +45,15 @@ class Properties(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     value = Column(Boolean, default=False)
+
+
+class ResponseReport(Base):
+    __tablename__: str = "response_report"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    start_time = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
+    end_time = Column(DateTime(timezone=True), onupdate=datetime.datetime.utcnow, default=None)
+    class_id = Column(Integer, default=None)
+    num_character_label = Column(Integer, default=None)
 
 
 class ScheduleJobNames(str, Enum):
