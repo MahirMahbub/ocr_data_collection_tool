@@ -6,9 +6,9 @@ from fastapi_utils.inferring_router import InferringRouter
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse, FileResponse
 
-from app.cruds.class_label import ClassLabelCrud
 from app.depends.db_depend import get_db
 from app.services.ocr import Ocr as ServiceOcr
+from app.services.response_report import ResponseReportService
 from db.schemas import CharacterClassUpdate
 
 router = InferringRouter()
@@ -68,9 +68,12 @@ class Ocr:
 
     @router.get("/classification/images/")
     def get_class_and_data_to_classify(self, limit: int = Query(5)):
-        unclassified_images, class_label_object = ServiceOcr().\
-            get_character_images_and_class_to_be_classify(self.db,limit=limit)
+        unclassified_images, class_label_object = ServiceOcr(). \
+            get_character_images_and_class_to_be_classify(self.db, limit=limit)
         response_list = []
+        report_object = ResponseReportService().create_response_report_by_class_id(db=self.db,
+                                                                                   class_id=class_label_object.class_id)
+        self.db.commit()
         for data in unclassified_images:
             response_list.append({
                 "id": data.id,
@@ -78,7 +81,8 @@ class Ocr:
             })
         return {
             "classToBeLabeled": class_label_object.class_id,
-            "images": response_list
+            "images": response_list,
+            "identifier": report_object.id
         }
 
     @router.get("/classification/image/response/")
@@ -91,16 +95,20 @@ class Ocr:
             print(data)
             return FileResponse(data.character_path)
 
-    @router.patch("/classification/image/{id_}", status_code=201)
-    def update_character_image_class(self, id_: int = Path(default=None), body: CharacterClassUpdate = Body(...)):
-        if id_ is None:
+    @router.patch("/classification/image/{identifier}", status_code=201)
+    def update_character_image_class(self, identifier: int = Path(default=None),
+                                     body: CharacterClassUpdate = Body(...)):
+        if identifier is None:
             return HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                                 detail="Provide a valid id")
+                                 detail="Provide a valid identifier")
         else:
-
-            if ServiceOcr().update_character_image_class(self.db, id_, body):
+            response = ServiceOcr().update_character_image_class(self.db, identifier, body)
+            if all(response):
+                ResponseReportService().update_response_report(db=self.db,
+                                                               id_=identifier,
+                                                               num_character_label=len(body.character_ids))
                 return HTTPException(status_code=status.HTTP_201_CREATED,
-                                     detail="Character image updated")
+                                     detail="Character images updated")
 
     @router.get("/data/class/image/")
     def get_class_label_images(self, class_id: int = Query(None)):

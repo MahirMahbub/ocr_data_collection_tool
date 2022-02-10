@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List, Any
 
 from fastapi_camelcase import CamelModel
 from pydantic import BaseModel
@@ -36,6 +36,7 @@ class CharacterCreate(BaseModel):
     class_id: Optional[str] = None
     inner_class_cluster_id: Optional[str] = None
     is_labeled: Optional[bool] = None
+    winner_label_count: Optional[int] = None
 
 
 class ClassLabelCreate(BaseModel):
@@ -52,3 +53,22 @@ class CharacterUpdate(BaseModel):
 
 class CharacterClassUpdate(BaseModel):
     class_id: Optional[str] = None
+    character_ids: List[int] = []
+
+
+class ResponseReportBase(BaseModel):
+    class_id: int
+
+
+class ResponseReportCreate(ResponseReportBase):
+    num_character_label: Optional[int] = None
+
+
+class ResponseReportUpdate(BaseModel):
+    num_character_label: int
+
+
+class LabelClusterCreate(BaseModel):
+    class_id: int
+    number_of_image: int
+    character_paths: Any

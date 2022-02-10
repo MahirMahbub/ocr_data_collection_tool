@@ -1,7 +1,6 @@
 import logging
 
 
-
 class CreateData(object):
     __instance__ = None
 

@@ -10,7 +10,8 @@ from fastapi_utils.inferring_router import InferringRouter
 
 # from app.depends.db_depend import get_db as campaign_db
 # from app.utils import catch_not_implemented_exception
-from app.custom_classes.job_manager import PrintJobManager, CharacterExtractorManager, PreOcrCharacterLoad
+from app.custom_classes.job_manager import PrintJobManager, CharacterExtractorManager, PreOcrCharacterLoad, \
+    ClusterManager
 from db.database import SessionLocal
 
 app: FastAPI = FastAPI(title='fast-api')
@@ -58,6 +59,8 @@ def init_scheduler():
                   CharacterExtractorManager.execute)
     job_initiator(db, job_list, scheduler, ScheduleJobNames.PreOcrCharacterLoad, '*/1 * * * *',
                   PreOcrCharacterLoad.execute)
+    job_initiator(db, job_list, scheduler, ScheduleJobNames.ClusterManager, '*/1 * * * *',
+                  ClusterManager.execute)
 
 
 def job_initiator(db, job_list, scheduler, schedule_job_names, cron_tab, job_func):
