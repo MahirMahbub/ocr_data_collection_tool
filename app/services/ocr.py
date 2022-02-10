@@ -1,21 +1,21 @@
-from skimage import io
 import os
 from pathlib import Path
 from typing import List, Tuple
 
 from fastapi import UploadFile
 from fastapi.encoders import jsonable_encoder
+from skimage import io
+from skimage.metrics import structural_similarity as ssim
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.cruds.character import CharacterCrud
 from app.cruds.class_label import ClassLabelCrud
+from app.cruds.label_cluster import LabelClusterCrud
 from app.cruds.ocr_tools import OcrToolCrud
 from app.custom_classes.file_path import next_file_name
-from app.custom_classes.image_clustering import ImageClustering
 from db import models
 from db.schemas import OcrDataCreate, CharacterUpdate, CharacterClassUpdate
-from skimage.metrics import structural_similarity as ssim
 
 image_file_extensions = IMAGE = ('ras', 'xwd', 'bmp', 'jpe', 'jpg', 'jpeg', 'xpm', 'ief', 'pbm', 'tif', 'gif', 'ppm',
                                  'xbm', 'tiff', 'rgb', 'pgm', 'png', 'pnm')
@@ -68,8 +68,9 @@ class Ocr(object):
         final_image_object_list = []
         class_label_object = ClassLabelCrud(db=db).get_by_round_robin()
 
-
-        label_image_paths = ImageClustering(db=db, class_id=class_label_object.class_id).apply_kmean()
+        # label_image_paths = ImageClustering(db=db, class_id=class_label_object.class_id).apply_kmean()
+        label_image_paths = LabelClusterCrud(db=db).get_by_class_id(
+            class_id=class_label_object.class_id).character_paths
 
         images_object_list: List[models.Characters] = CharacterCrud(db=db).get_images(limit=100)
         to_be_label_image_paths = [image_object.character_path for image_object in images_object_list]
@@ -115,6 +116,7 @@ class Ocr(object):
 
     @staticmethod
     def get_images_for_class_label(db, class_id):
-        image_paths = ImageClustering(db=db, class_id=class_id).apply_kmean()
+        # image_paths = ImageClustering(db=db, class_id=class_id).apply_kmean()
+        image_paths = LabelClusterCrud(db=db).get_by_class_id(class_id=class_id).character_paths
         image_ids = [CharacterCrud(db=db).get_id_by_path(image_path) for image_path in image_paths]
         return image_ids

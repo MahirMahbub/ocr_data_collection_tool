@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from fastapi_camelcase import CamelModel
 from pydantic import BaseModel
@@ -63,5 +63,12 @@ class ResponseReportBase(BaseModel):
 class ResponseReportCreate(ResponseReportBase):
     num_character_label: Optional[int] = None
 
+
 class ResponseReportUpdate(BaseModel):
     num_character_label: int
+
+
+class LabelClusterCreate(BaseModel):
+    class_id: int
+    number_of_image: int
+    character_paths: Any

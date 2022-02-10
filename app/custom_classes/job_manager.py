@@ -4,14 +4,17 @@ from typing import List
 
 import imageio
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.cruds.character import CharacterCrud
 from app.cruds.class_label import ClassLabelCrud
+from app.cruds.label_cluster import LabelClusterCrud
 from app.cruds.ocr_tools import OcrToolCrud
+from app.custom_classes.image_clustering import ImageClustering
 from app.custom_classes.ocr_character_seperator import OcrCharacterSeperator
 from db import models
 from db.database import SessionLocal
-from db.schemas import CharacterCreate, OcrDataUpdate, ClassLabelCreate
+from db.schemas import CharacterCreate, OcrDataUpdate, ClassLabelCreate, LabelClusterCreate
 
 
 class BaseJobManager(object):
@@ -96,4 +99,31 @@ class CharacterExtractorManager(BaseJobManager):
         CharacterExtractorManager().character_extract_activity(should_run=True)
 
 
+class ClusterManager(BaseJobManager):
+    def __init__(self):
+        super().__init__()
 
+    def cluster_activity(self, should_run):
+        class_label_objects: List[models.ClassLabel] = ClassLabelCrud(db=self.db).gets()
+        for class_label_object in class_label_objects:
+            label_cluster_data: models.LabelCluster = LabelClusterCrud(db=self.db).get_by_class_id(
+                class_id=class_label_object.class_id)
+            number_of_image_labeled: models.Characters = CharacterCrud(db=self.db).get_count_by_class_id(
+                class_id=str(class_label_object.class_id))
+            # print(number_of_image_labeled, label_cluster_data)
+            if label_cluster_data is None or label_cluster_data.number_of_image != number_of_image_labeled:
+                label_image_paths = ImageClustering(db=self.db, class_id=class_label_object.class_id).apply_kmean()
+                # print(label_image_paths)
+                item = LabelClusterCreate(class_id=class_label_object.class_id,
+                                          number_of_image=number_of_image_labeled,
+                                          character_paths=label_image_paths)
+                try:
+                    crud_object = LabelClusterCrud(db=self.db).store(item=item)
+                except SQLAlchemyError as e:
+                    print(str(e.__dict__['orig']))
+                    self.db.rollback()
+            self.db.commit()
+
+    @staticmethod
+    def execute():
+        ClusterManager().cluster_activity(should_run=True)

@@ -1,5 +1,6 @@
 from typing import List
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.utils import overrides
 from app.cruds.table_repository import TableRepository
@@ -35,3 +36,7 @@ class CharacterCrud(TableRepository):
 
     def get_id_by_path(self, path):
         return self.db.query(self.entity.id).filter(self.entity.character_path == path).first()
+
+    def get_count_by_class_id(self, class_id: str):
+        return self.db.query(self.entity).filter(self.entity.class_id == class_id).count()
+

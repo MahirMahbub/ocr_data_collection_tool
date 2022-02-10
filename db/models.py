@@ -2,13 +2,20 @@ import datetime
 from enum import Enum
 
 from sqlalchemy import Boolean, Column, Integer, String, Float, DateTime
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from db.database import Base
 
 
-class Characters(Base):
-    __tablename__: str = "characters"
+class ModelBase:
     id = Column(Integer, primary_key=True, autoincrement=True)
+    create_time = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
+    update_time = Column(DateTime(timezone=True), onupdate=datetime.datetime.utcnow, default=None)
+
+
+class Characters(Base,ModelBase):
+    __tablename__: str = "characters"
+
     character_path = Column(String, nullable=False)
     class_id = Column(String, nullable=True)
     inner_class_cluster_id = Column(String, nullable=True)
@@ -16,9 +23,8 @@ class Characters(Base):
     winner_label_count = Column(Integer, default=0)
 
 
-class NearestClassOfCharacter(Base):
+class NearestClassOfCharacter(Base,ModelBase):
     __tablename__: str = "nearest_class_of_character"
-    id = Column(Integer, primary_key=True, autoincrement=True)
     character_id = Column(Integer, nullable=False)
     class_id = Column(String, nullable=False)
     inner_class_cluster_id = Column(String, nullable=False)
@@ -26,37 +32,39 @@ class NearestClassOfCharacter(Base):
     is_valid_class = Column(Boolean)
 
 
-class ClassLabel(Base):
+class ClassLabel(Base,ModelBase):
     __tablename__: str = "class_label"
-    id = Column(Integer, primary_key=True, autoincrement=True)
     class_id = Column(Integer, nullable=False)
     round_robin_marker = Column(Integer, default=0)
 
 
-class OcrData(Base):
+class OcrData(Base,ModelBase):
     __tablename__: str = "ocr_data"
-    id = Column(Integer, primary_key=True, autoincrement=True)
     file_path = Column(String)
     is_extracted = Column(Boolean, default=False)
 
 
-class Properties(Base):
+class Properties(Base,ModelBase):
     __tablename__: str = "properties"
-    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String)
     value = Column(Boolean, default=False)
 
 
-class ResponseReport(Base):
+class ResponseReport(Base,ModelBase):
     __tablename__: str = "response_report"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    start_time = Column(DateTime(timezone=True), default=datetime.datetime.utcnow)
-    end_time = Column(DateTime(timezone=True), onupdate=datetime.datetime.utcnow, default=None)
     class_id = Column(Integer, default=None)
     num_character_label = Column(Integer, default=None)
+
+
+class LabelCluster(Base,ModelBase):
+    __tablename__: str = "label_cluster"
+    character_paths = Column(ARRAY(String()))
+    class_id = Column(Integer, default=None)
+    number_of_image = Column(Integer, default=None)
 
 
 class ScheduleJobNames(str, Enum):
     CharacterExtractorManager = "CharacterExtractorManager"
     PrintJobManager = "PrintJobManager"
     PreOcrCharacterLoad = "PreOcrCharacterLoad"
+    ClusterManager = "ClusterManager"
