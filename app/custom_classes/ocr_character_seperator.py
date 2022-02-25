@@ -18,20 +18,22 @@ from skimage.transform import resize
 from skimage.util import invert
 import os
 
+# from app.custom_classes.file_path import next_file_name
 from app.custom_classes.file_path import next_file_name
 
 
 class OcrCharacterSeperator:
 
-    def line_counter(self, inp_img):
+    def line_counter(self, inp_img, lines, column):
         imgs = []
         line_count = 1
         for i in range(len(lines) - 1):
             new_img = inp_img[lines[i]:lines[i + 1] - 1, 0:column]
+            x = lines[i + 1]
             # print(type(new_img))
             if int(new_img.shape[0]) < 30:
                 continue
-            new_img = resize(new_img, (90, int(new_img.shape[1] * (90 / float(new_img.shape[0])))))
+            new_img = resize(new_img, (83, int(new_img.shape[1] * (93 / float(new_img.shape[0])))))
             # print(new_img)
             new_img = self.pre_image_processing(new_img)
             skeleton = skeletonize(new_img) * 255
@@ -41,6 +43,7 @@ class OcrCharacterSeperator:
 
     @staticmethod
     def pre_image_processing(resized_image):
+        resized_image = invert(resized_image)
         equal_adapt_hist_image = exposure.equalize_adapthist(resized_image)
         rescale_intensity_image = exposure.rescale_intensity(equal_adapt_hist_image)
         adjust_sigmoid_image = exposure.adjust_sigmoid(rescale_intensity_image)
@@ -48,12 +51,12 @@ class OcrCharacterSeperator:
         mean_image = mean(gray_scale_image, disk(1))
         mean_image = mean(mean_image, disk(1))
         mean_image = mean(mean_image, disk(1))
-
-        median_image = dilation(median(mean_image, disk(1)), square(2))
+        median_image = median(mean_image, disk(1))
+        # median_image = dilation(median(mean_image, disk(1)), square(2))
         otsu_image = filters.threshold_otsu(median_image)
         closing_image = closing(median_image > otsu_image, square(1))
-        #    opening_image = opening(closing_image, square(2))
-        opening_image = invert(closing_image)
+        opening_image = opening(closing_image, square(2))
+        # opening_image = invert(opening_image)
         return opening_image
 
     @staticmethod
@@ -232,15 +235,15 @@ class OcrCharacterSeperator:
         return closing_image
 
     def character_extractor(self, path):
-        global ax, row, column, lines, imgs, image, histogram
+        # global ax, row, column, lines, imgs, image, histogram
         inp_img = io.imread(path, as_gray=True)
         # print(inp_img)
-        fig, ax = plt.subplots(figsize=(10, 10))
+        # fig, ax = plt.subplots(figsize=(10, 10))
         row, column = inp_img.shape
         lines = self.line_separation(inp_img)
         imgs = []
         # print(lines)
-        line_count, imgs = self.line_counter(inp_img)
+        line_count, imgs = self.line_counter(inp_img, lines, column)
         image_count = 1
         sentence_list = []
         character_images: list = []
@@ -251,17 +254,17 @@ class OcrCharacterSeperator:
             new_ = self.line_and_base_seperation(image, image_count)
             histogram = closing_image2.sum(axis=0).reshape(1, -1)
 
-            maximum_histogram_index = np.argmax(histogram)
+            # maximum_histogram_index = np.argmax(histogram)
             closing_img = np.copy(closing_image2)
 
             word_marked = np.copy(closing_img)
             label_image = label(word_marked)
-            image_num = 1
+            # image_num = 1
             for region in regionprops(label_image):
                 minr, minc, maxr, maxc = region.bbox
                 rec_row, rec_col = rectangle((minr - 5, minc - 5), end=(maxr + 5, maxc + 5), shape=word_marked.shape)
                 word_marked[rec_row, rec_col] = 255
-                # img = region.image * 255
+                img = region.image * 255
 
             word_marked_90 = np.rot90(word_marked, 3)
             closing_image_90 = np.rot90(new_, 3)
@@ -272,7 +275,7 @@ class OcrCharacterSeperator:
             for region in regionprops(label_image):
                 minr, minc, maxr, maxc = region.bbox
                 # print(region.bbox)
-                img = closing_image_90[minr:maxr, minc:maxc] * 255
+                img = closing_image_90[minr:maxr, minc:maxc]
                 # imageio.imwrite(
                 #     current_folder + os.getenv("FILE_SOURCE_FOLDER") + str(image_count) + "_" + str(image_num) + ".PNG",
                 #     np.rot90(dilation(img, square(2)), 1))
@@ -281,7 +284,7 @@ class OcrCharacterSeperator:
                 word_image_num = 0
                 # plt.imshow(label_word_image)
                 # plt.show()
-                # character_list = []
+                character_list = []
                 for char_region in regionprops(label_word_image):
                     if char_region.area > 0:
                         c_minr, c_minc, c_maxr, c_maxc = char_region.bbox
@@ -292,8 +295,17 @@ class OcrCharacterSeperator:
 
                         char_img = resize(char_img, (250, 250))
                         if char_region.area < 10 and c_minc < 43:
-
-                            # character_list.append("fota")
+                            bucket_id: str = current_folder + os.getenv("FILE_SOURCE_FOLDER")
+                            file_name = str(image_count) + "_" + str(
+                                image_num) + "_" + str(
+                                word_image_num) + ".PNG"
+                            name, extension = file_name.split(".")
+                            file_pattern: str = name + "(" + "%s" + ")" + "." + extension
+                            main_file_name: str = name + "." + extension
+                            file_name: str = next_file_name(file_pattern, bucket_id, main_file_name)
+                            ########################
+                            save_path = bucket_id + file_name
+                            character_images.append((save_path, char_img*0))
                             continue
                         elif char_region.area >= 13:
 
@@ -324,7 +336,7 @@ class OcrCharacterSeperator:
 
                 # word_list.append(character_list)
                 image_num += 1
-            sentence_list.append(word_list)
+            # sentence_list.append(word_list)
 
             image_count += 1
         return character_images

@@ -42,7 +42,8 @@ class Ocr(object):
                         f.write(attachment.file.read())
                     success_upload_list.append(attachment.filename)
                     item = OcrDataCreate(file_path=bucket_id + file_name)
-                    OcrToolCrud(db=db).store(item=jsonable_encoder(item))
+                    print(item)
+                    OcrToolCrud(db=db).store(item=item)
                     try:
                         db.commit()
                     except SQLAlchemyError as e:

@@ -21,8 +21,6 @@ services:
       - '.:/srv/ocr_backend'
     ports:
       - '7003:7003'
-    depends_on:
-      - db
     env_file: .env
   ocr_tool_db_mutator:
     build: .
