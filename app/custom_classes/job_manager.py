@@ -4,6 +4,7 @@ from typing import List
 
 import imageio
 from fastapi.encoders import jsonable_encoder
+from imageio import imsave
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.cruds.character import CharacterCrud
@@ -84,11 +85,12 @@ class CharacterExtractorManager(BaseJobManager):
         for ocr_image in ocr_image_paths:
             images_and_save_path = ocr_processing_object.character_extractor(ocr_image.file_path)
             for save_path, char_img in images_and_save_path:
-                imageio.imwrite(save_path, char_img)
+                # imageio.imwrite(save_path, char_img)
+                imsave(save_path, char_img)
                 item = CharacterCreate(character_path=save_path,
                                        winner_label_count=0,
                                        is_labeled=False)
-                character_model_object = CharacterCrud(db=self.db).store(jsonable_encoder(item))
+                character_model_object = CharacterCrud(db=self.db).store(item)
                 self.db.add(character_model_object)
             item = OcrDataUpdate(is_extracted=True)
             OcrToolCrud(db=self.db).update(id_=ocr_image.id, item=item)
