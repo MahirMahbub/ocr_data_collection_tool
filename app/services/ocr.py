@@ -5,7 +5,8 @@ from typing import List, Tuple
 from fastapi import UploadFile
 from fastapi.encoders import jsonable_encoder
 from skimage import io
-from skimage.metrics import structural_similarity as ssim
+from skimage.measure import compare_ssim as ssim
+# from skimage.metrics import structural_similarity as ssim
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -18,9 +19,9 @@ from db import models
 from db.schemas import OcrDataCreate, CharacterUpdate, CharacterClassUpdate
 
 image_file_extensions = IMAGE = ('ras', 'xwd', 'bmp', 'jpe', 'jpg', 'jpeg', 'xpm', 'ief', 'pbm', 'tif', 'gif', 'ppm',
-                                 'xbm', 'tiff', 'rgb', 'pgm', 'png', 'pnm')
+                                 'xbm', 'tiff', 'rgb', 'pgm', 'png', 'pnm', "PNG")
 
-
+# structural_similarity
 class Ocr(object):
 
     def ocr_data_file_upload(self, db: Session, files: List[UploadFile]) -> Tuple[List, List, List]:
@@ -40,9 +41,10 @@ class Ocr(object):
                 try:
                     with open(bucket_id + file_name, 'wb') as f:
                         f.write(attachment.file.read())
+                    print("Success: ", attachment.filename)
                     success_upload_list.append(attachment.filename)
                     item = OcrDataCreate(file_path=bucket_id + file_name)
-                    print(item)
+                    # print(item)
                     OcrToolCrud(db=db).store(item=item)
                     try:
                         db.commit()

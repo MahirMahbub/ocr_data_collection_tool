@@ -56,6 +56,7 @@ class OcrCharacterSeperator:
         otsu_image = filters.threshold_otsu(median_image)
         closing_image = closing(median_image > otsu_image, square(1))
         opening_image = opening(closing_image, square(2))
+        # opening_image = invert(closing_image)
         # opening_image = invert(opening_image)
         return opening_image
 

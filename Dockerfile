@@ -1,4 +1,4 @@
-FROM python:3.8.5
+FROM python:3.6.5
 ENV PYTHONUNBUFFERED 1
 RUN mkdir /srv/ocr_backend
 WORKDIR /srv/ocr_backend
